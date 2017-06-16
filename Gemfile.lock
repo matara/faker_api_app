@@ -11,11 +11,8 @@ GEM
     faker (1.7.3)
       i18n (~> 0.5)
     i18n (0.8.4)
-    metaclass (0.0.4)
     minitest (5.10.2)
     minitest-hooks (1.4.0)
-    mocha (1.2.1)
-      metaclass (~> 0.0.1)
     multi_json (1.12.1)
     mustermann (1.0.0)
     rack (2.0.3)
@@ -51,7 +48,6 @@ DEPENDENCIES
   faker
   minitest
   minitest-hooks
-  mocha
   rack-test
   rake
   shotgun
