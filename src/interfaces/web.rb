@@ -13,8 +13,13 @@ get '/faker/*?' do
   content_type :json
 
   mod, method = params[:splat].first.split('/')
-  clazz = Object.const_get( ['Faker', mod.capitalize].join('::'))
-  data = clazz.send(method)
+  clazz = Object.const_get(['Faker', mod.capitalize].join('::'))
+
+  if params[:count].to_i > 0
+    data = params[:count].to_i.times.map { clazz.send(method) }
+  else
+    data = [clazz.send(method)]
+  end
 
   { module: clazz, method: method, data: data }.to_json
 end
