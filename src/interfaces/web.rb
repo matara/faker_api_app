@@ -3,23 +3,56 @@ require 'sinatra/json'
 require 'faker'
 require 'active_support'
 
-set :cache_enabled, true
+def error_resp
+  status 200
+  content_type :json
+  { module: '', method: '', data: [] }.to_json
+end
 
 get '/?' do
   'API interface for https:://github.com/stympy/faker gem'
 end
 
 get '/faker/*?' do
-  content_type :json
+  begin
+    content_type :json
 
-  mod, method = params[:splat].first.split('/')
-  clazz = Object.const_get(['Faker', mod.capitalize].join('::'))
+    possible_class, possible_method = params[:splat].first.split('/')
 
-  if params[:count].to_i > 0
-    data = params[:count].to_i.times.map { clazz.send(method) }
-  else
-    data = [clazz.send(method)]
+    clazz = faker_class_for(possible_class)
+    method = faker_method_for(clazz, possible_method)
+
+    data = faker_data_times(clazz, method, params[:count] ? params[:count].to_i : 1)
+
+    { module: clazz, method: method, data: data }.to_json
+  rescue
+    error_resp
   end
+end
 
-  { module: clazz, method: method, data: data }.to_json
+
+def faker_class_for(possible_class)
+  if possible_class =~ /s$/
+    begin
+      Object.const_get(['Faker', possible_class.capitalize].join('::'))
+    rescue
+      Object.const_get(['Faker', possible_class.gsub(/s$/, '').capitalize].join('::'))
+    end
+  else
+    begin
+      Object.const_get(['Faker', possible_class.gsub(/s$/, '').capitalize].join('::'))
+    rescue
+      Object.const_get(['Faker', (possible_class + 's').capitalize].join('::'))
+    end
+  end
+end
+
+def faker_method_for(clazz, method)
+  return method if clazz.respond_to?(method)
+  method.gsub(/s$/, '')
+end
+
+def faker_data_times(clazz, method, count)
+  return [] if count == 0
+  count.times.map { clazz.send(method) }
 end

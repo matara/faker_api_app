@@ -61,10 +61,50 @@ describe app do
       end
     end
 
-    def expect_faker_response(mod = nil, method = nil)
+    describe 'when undefined words' do
+      it 'with undefined module' do
+        get '/faker/blabla/ingredient'
+      end
+
+      it 'with undefined method' do
+        get '/faker/Food/blabla'
+      end
+
+      after do
+        expect(last_response.status).must_equal 200
+        expect(last_response.headers['Content-Type']).must_equal 'application/json'
+        expect(response_json['data']).must_equal([])
+        expect(response_json['module']).must_equal('')
+        expect(response_json['method']).must_equal('')
+      end
+    end
+
+    it 'when module plural' do
+      get '/faker/friend/character'
+      expect_faker_response('Faker::Friends', 'character', skip_data_empty: true)
+      get '/faker/friend/characters'
+      expect_faker_response('Faker::Friends', 'character', skip_data_empty: true)
+      get '/faker/friends/character'
+      expect_faker_response('Faker::Friends', 'character', skip_data_empty: true)
+      get '/faker/friends/characters'
+      expect_faker_response('Faker::Friends', 'character', skip_data_empty: true)
+    end
+
+    it 'when module singular' do
+      get '/faker/food/ingredient'
+      expect_faker_response('Faker::Food', 'ingredient', skip_data_empty: true)
+      get '/faker/food/ingredients'
+      expect_faker_response('Faker::Food', 'ingredient', skip_data_empty: true)
+      get '/faker/foods/ingredient'
+      expect_faker_response('Faker::Food', 'ingredient', skip_data_empty: true)
+      get '/faker/foods/ingredients'
+      expect_faker_response('Faker::Food', 'ingredient', skip_data_empty: true)
+    end
+
+    def expect_faker_response(mod = nil, method = nil, opt = {})
       expect(last_response.status).must_equal 200
       expect(last_response.headers['Content-Type']).must_equal 'application/json'
-      expect(response_json['data']).wont_be_empty
+      expect(response_json['data']).wont_be_empty unless opt[:skip_data_empty]
       expect(response_json['data'].class).must_equal(Array)
       expect(response_json['module']).must_equal(mod) if mod
       expect(response_json['method']).must_equal(method) if method
