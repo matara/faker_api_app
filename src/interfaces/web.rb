@@ -53,6 +53,6 @@ def faker_method_for(clazz, method)
 end
 
 def faker_data_times(clazz, method, count)
-  return [] if count == 0
+  count = 1 if count < 1
   count.times.map { clazz.send(method) }
 end
